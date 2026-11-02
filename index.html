@@ -1,0 +1,751 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Cibertodo Quizz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one phone-width column, three screens (inicio, pregunta, resultado).
+   Color: azul y rojo de la bandera sobre neutros con matiz azul.
+   Type: Alfa Slab One (rótulo de colmado) solo en títulos y puntaje; Figtree para todo lo demás. */
+:root {
+  --bg: #F2F4FA;
+  --surface: #FFFFFF;
+  --ink: #0E1B3D;
+  --muted: #566282;
+  --line: #D6DCEC;
+  --blue: #1F3F9E;
+  --red: #CE1126;
+  --cta: #CE1126;
+  --on-cta: #FFFFFF;
+  --good: #17784B;
+  --goodbg: #DDF2E7;
+  --badbg: #FBE0E3;
+  --flag-blue: #0B3A8C;
+  --flag-red: #CE1126;
+  --flag-white: #FFFFFF;
+  --display: "Alfa Slab One", Georgia, "Times New Roman", serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1128;
+    --surface: #131C3A;
+    --ink: #EDF0FA;
+    --muted: #9CA8CA;
+    --line: #27335C;
+    --blue: #86A3FF;
+    --red: #FF6B77;
+    --good: #4CD694;
+    --goodbg: #123A2C;
+    --badbg: #4A1B25;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1128;
+  --surface: #131C3A;
+  --ink: #EDF0FA;
+  --muted: #9CA8CA;
+  --line: #27335C;
+  --blue: #86A3FF;
+  --red: #FF6B77;
+  --good: #4CD694;
+  --goodbg: #123A2C;
+  --badbg: #4A1B25;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+  min-height: 100vh;
+}
+.wrap { max-width: 520px; margin: 0 auto; }
+section[hidden] { display: none !important; }
+button { font-family: inherit; }
+button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+/* ---------- Inicio ---------- */
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 58px; height: 58px; flex: none; }
+.kicker { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(2.2rem, 10vw, 3.1rem); line-height: 1.04;
+  margin: 28px 0 0; text-wrap: balance;
+}
+.rule { display: flex; gap: 6px; margin: 16px 0 18px; }
+.rule span { height: 6px; border-radius: 3px; }
+.rule span:first-child { width: 56px; background: var(--blue); }
+.rule span:last-child { width: 28px; background: var(--red); }
+.lead { margin: 0 0 24px; color: var(--muted); font-size: 1.05rem; max-width: 34ch; }
+.modes { display: grid; gap: 12px; }
+.mode {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 72px; padding: 14px 16px; text-align: left; cursor: pointer;
+  background: var(--surface); color: var(--ink);
+  border: 2px solid var(--line); border-radius: 16px;
+}
+.mode .t { display: block; font-weight: 800; font-size: 1.1rem; }
+.mode .d { display: block; font-size: .9rem; color: var(--muted); margin-top: 2px; }
+.mode .go { flex: none; font-weight: 800; font-size: 1.3rem; color: var(--blue); }
+.mode.main { background: var(--cta); border-color: var(--cta); color: var(--on-cta); }
+.mode.main .d, .mode.main .go { color: var(--on-cta); }
+.mode.main .d { opacity: .9; }
+@media (hover: hover) { .mode:not(.main):hover { border-color: var(--blue); } }
+.best { margin: 22px 0 0; color: var(--muted); font-size: .95rem; font-variant-numeric: tabular-nums; }
+
+/* ---------- Pregunta ---------- */
+.hud { display: flex; align-items: center; gap: 12px; }
+.count, .score { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.score { color: var(--blue); }
+.segs { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.segs span { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
+.segs .ok { background: var(--good); }
+.segs .no { background: var(--red); }
+.segs .now { background: var(--blue); }
+.timer { height: 8px; margin-top: 14px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.timer > div { height: 100%; background: var(--blue); transform-origin: left center; }
+.timer.low > div { background: var(--red); }
+.chip {
+  display: inline-block; margin-top: 22px; padding: 4px 10px; border-radius: 999px;
+  font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--blue); border: 1.5px solid var(--blue);
+}
+.q { font-size: 1.4rem; line-height: 1.28; font-weight: 800; margin: 12px 0 20px; text-wrap: balance; }
+.opts { display: grid; gap: 10px; }
+.opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px;
+  padding: 10px 14px; text-align: left; cursor: pointer;
+  background: var(--surface); color: var(--ink);
+  border: 2px solid var(--line); border-radius: 14px;
+  font-size: 1rem; font-weight: 600;
+}
+.opt .key {
+  flex: none; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+  background: var(--bg); color: var(--muted); font-size: .85rem; font-weight: 800;
+}
+.opt .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.opt .mark { flex: none; font-weight: 800; font-size: 1.1rem; }
+.opt:disabled { cursor: default; color: var(--ink); }
+.opt.correct { border-color: var(--good); background: var(--goodbg); }
+.opt.correct .mark { color: var(--good); }
+.opt.wrong { border-color: var(--red); background: var(--badbg); }
+.opt.wrong .mark { color: var(--red); }
+.opt.dim { opacity: .55; }
+@media (hover: hover) { .opt:not(:disabled):hover { border-color: var(--blue); } }
+
+.fb { margin-top: 16px; padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.fb h3 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 800; }
+.fb h3.ok { color: var(--good); }
+.fb h3.no { color: var(--red); }
+.fb p { margin: 0; color: var(--muted); }
+.fb .streak { margin-top: 8px; font-size: .9rem; font-weight: 700; color: var(--blue); }
+.cta {
+  display: block; width: 100%; min-height: 54px; margin-top: 14px; padding: 12px 16px;
+  border: 0; border-radius: 14px; cursor: pointer;
+  background: var(--cta); color: var(--on-cta); font-size: 1.05rem; font-weight: 800;
+}
+.cta.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+.cta.share { background: #17784B; }
+.cta.ghost { margin-top: 10px; }
+.cta[hidden] { display: none; }
+
+
+
+/* ---------- Niveles ---------- */
+.mode .num {
+  flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
+  background: var(--bg); color: var(--blue);
+  font-family: var(--display); font-size: 1.3rem; line-height: 1;
+}
+.mode .mid { flex: 1; min-width: 0; }
+.mode .go { font-size: .85rem; text-align: right; }
+.mode.main .num { background: rgba(255, 255, 255, .22); color: var(--on-cta); }
+.mode.locked { opacity: .6; cursor: not-allowed; }
+.mode.locked .go { color: var(--muted); }
+.end-msg { margin: 10px 0 0; color: var(--muted); }
+
+/* ---------- Resultado ---------- */
+.end-rank { font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; }
+.end-title { font-family: var(--display); font-weight: 400; font-size: clamp(1.9rem, 8.5vw, 2.6rem); line-height: 1.08; margin: 8px 0 0; text-wrap: balance; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0 6px; }
+.stat { padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.stat b { display: block; font-family: var(--display); font-weight: 400; font-size: 2rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: .85rem; color: var(--muted); }
+.end-best { margin: 14px 0 0; color: var(--muted); font-size: .95rem; font-variant-numeric: tabular-nums; }
+.end-best strong { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<main class="wrap">
+  <section id="s-start">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><defs><clipPath id="brainClip"><polygon points="92.7,50.0 92.8,50.6 92.9,51.2 93.0,51.9 93.0,52.5 93.0,53.1 92.9,53.8 92.8,54.4 92.7,55.0 92.5,55.6 92.3,56.2 92.1,56.8 91.8,57.4 91.5,58.0 91.1,58.5 90.8,59.1 90.4,59.7 90.0,60.2 89.6,60.7 89.2,61.3 88.8,61.8 88.5,62.3 88.1,62.8 87.7,63.3 87.4,63.9 87.0,64.4 86.7,64.9 86.4,65.4 86.1,66.0 85.8,66.5 85.5,67.1 85.3,67.7 85.0,68.2 84.8,68.8 84.5,69.4 84.2,70.0 84.0,70.6 83.7,71.1 83.4,71.7 83.0,72.3 82.7,72.9 82.3,73.4 81.9,73.9 81.5,74.5 81.0,75.0 80.5,75.4 80.0,75.9 79.4,76.3 78.9,76.7 78.3,77.1 77.6,77.4 77.0,77.8 76.3,78.1 75.6,78.3 74.9,78.6 74.2,78.8 73.5,79.0 72.8,79.2 72.1,79.4 71.4,79.6 70.7,79.8 70.0,80.0 69.3,80.2 68.6,80.4 67.9,80.6 67.3,80.8 66.6,81.1 66.0,81.3 65.3,81.6 64.7,81.8 64.0,82.1 63.4,82.4 62.8,82.7 62.1,82.9 61.5,83.2 60.8,83.4 60.2,83.6 59.5,83.8 58.8,83.9 58.1,84.0 57.4,83.9 56.7,83.8 56.0,83.6 55.2,83.3 54.5,82.9 53.8,82.5 53.0,82.0 52.3,81.6 51.5,81.2 50.8,81.0 50.0,80.8 49.3,80.8 48.5,80.9 47.8,81.1 47.0,81.3 46.3,81.6 45.6,81.9 44.9,82.2 44.2,82.4 43.5,82.6 42.8,82.7 42.1,82.8 41.5,82.8 40.8,82.8 40.1,82.7 39.4,82.7 38.7,82.6 38.1,82.4 37.4,82.3 36.7,82.2 36.0,82.1 35.3,82.0 34.5,81.9 33.8,81.8 33.1,81.7 32.3,81.6 31.6,81.4 30.9,81.3 30.1,81.1 29.4,81.0 28.7,80.8 28.0,80.6 27.2,80.3 26.6,80.1 25.9,79.8 25.2,79.5 24.6,79.1 24.0,78.7 23.4,78.3 22.9,77.9 22.4,77.4 21.9,77.0 21.4,76.5 21.0,75.9 20.6,75.4 20.1,74.9 19.8,74.3 19.4,73.8 19.0,73.2 18.7,72.7 18.3,72.1 18.0,71.6 17.6,71.1 17.3,70.5 16.9,70.0 16.5,69.5 16.2,69.0 15.8,68.5 15.3,68.0 14.9,67.6 14.5,67.1 14.0,66.6 13.6,66.2 13.1,65.7 12.6,65.2 12.1,64.7 11.7,64.2 11.2,63.7 10.8,63.2 10.3,62.7 9.9,62.2 9.5,61.6 9.2,61.1 8.8,60.5 8.6,59.9 8.3,59.3 8.1,58.7 7.9,58.1 7.8,57.5 7.7,56.8 7.7,56.2 7.7,55.6 7.7,55.0 7.8,54.3 7.8,53.7 7.9,53.1 8.1,52.4 8.2,51.8 8.4,51.2 8.5,50.6 8.7,50.0 8.8,49.4 9.0,48.8 9.1,48.2 9.2,47.6 9.3,47.0 9.4,46.4 9.5,45.9 9.5,45.3 9.6,44.7 9.6,44.1 9.6,43.5 9.6,42.8 9.6,42.2 9.6,41.6 9.6,41.0 9.7,40.4 9.7,39.7 9.7,39.1 9.8,38.5 9.9,37.8 10.0,37.2 10.2,36.6 10.4,36.0 10.6,35.4 10.9,34.8 11.2,34.2 11.5,33.7 11.9,33.1 12.3,32.6 12.8,32.1 13.3,31.6 13.8,31.1 14.3,30.7 14.9,30.2 15.4,29.8 16.0,29.4 16.6,29.0 17.2,28.6 17.8,28.2 18.3,27.9 18.9,27.5 19.5,27.1 20.0,26.7 20.6,26.3 21.1,25.9 21.6,25.5 22.2,25.1 22.7,24.7 23.1,24.3 23.6,23.8 24.1,23.4 24.6,22.9 25.1,22.4 25.5,22.0 26.0,21.5 26.5,21.0 27.0,20.5 27.6,20.1 28.1,19.6 28.7,19.2 29.2,18.8 29.8,18.4 30.5,18.0 31.1,17.7 31.8,17.4 32.4,17.1 33.1,16.9 33.8,16.7 34.6,16.5 35.3,16.4 36.0,16.3 36.8,16.2 37.6,16.1 38.3,16.2 39.1,16.2 39.8,16.3 40.6,16.4 41.3,16.7 42.1,16.9 42.8,17.3 43.6,17.7 44.3,18.1 45.0,18.6 45.7,19.1 46.4,19.6 47.2,20.1 47.9,20.4 48.6,20.7 49.3,20.8 50.0,20.8 50.7,20.6 51.4,20.3 52.2,19.9 52.9,19.4 53.6,18.8 54.4,18.1 55.1,17.5 55.9,17.0 56.6,16.5 57.4,16.1 58.2,15.8 58.9,15.6 59.7,15.4 60.4,15.4 61.2,15.4 61.9,15.5 62.6,15.7 63.3,15.9 64.0,16.1 64.7,16.4 65.4,16.7 66.0,17.0 66.6,17.4 67.2,17.7 67.8,18.1 68.4,18.5 69.0,18.9 69.6,19.3 70.1,19.8 70.7,20.2 71.2,20.6 71.8,21.0 72.3,21.4 72.9,21.7 73.4,22.1 74.0,22.5 74.6,22.8 75.2,23.2 75.8,23.5 76.4,23.8 77.0,24.1 77.6,24.4 78.3,24.7 78.9,25.1 79.5,25.4 80.2,25.7 80.8,26.0 81.5,26.4 82.1,26.8 82.7,27.1 83.3,27.6 83.8,28.0 84.4,28.4 84.9,28.9 85.4,29.4 85.8,29.9 86.2,30.4 86.6,31.0 86.9,31.5 87.2,32.1 87.5,32.7 87.7,33.3 87.9,33.9 88.1,34.5 88.3,35.1 88.4,35.8 88.5,36.4 88.6,37.0 88.7,37.6 88.8,38.2 88.9,38.8 89.1,39.4 89.2,40.0 89.3,40.6 89.5,41.2 89.6,41.8 89.8,42.3 90.0,42.9 90.2,43.5 90.4,44.1 90.6,44.6 90.9,45.2 91.1,45.8 91.4,46.4 91.6,47.0 91.9,47.6 92.1,48.2 92.3,48.8 92.5,49.4"/></clipPath></defs><g clip-path="url(#brainClip)"><rect x="0" y="0" width="50" height="50" fill="#0B3A8C"/><rect x="50" y="0" width="50" height="50" fill="#CE1126"/><rect x="0" y="50" width="50" height="50" fill="#CE1126"/><rect x="50" y="50" width="50" height="50" fill="#0B3A8C"/><path d="M50 0V100M0 50H100" stroke="#fff" stroke-width="3.4" fill="none"/><g fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16.0,28.0 17.8,30.1 19.6,31.3 21.4,31.2 23.2,29.8 25.0,27.7 26.8,25.7 28.6,24.7 30.4,25.0 32.2,26.5 34.0,28.7 35.8,30.5 37.6,31.4 39.4,30.9 41.2,29.2 43.0,27.0"/><polyline points="22.0,40.0 23.8,42.0 25.6,41.7 27.4,39.5 29.2,37.9 31.0,38.6 32.8,40.9 34.6,42.2 36.4,41.0 38.2,38.7 40.0,37.8 41.8,39.4 43.6,41.6"/><polyline points="22.0,61.0 23.8,59.0 25.6,59.3 27.4,61.5 29.2,63.1 31.0,62.4 32.8,60.1 34.6,58.8 36.4,60.0 38.2,62.3 40.0,63.2 41.8,61.6 43.6,59.4"/><polyline points="16.0,72.0 17.8,69.9 19.6,68.7 21.4,68.8 23.2,70.2 25.0,72.3 26.8,74.3 28.6,75.3 30.4,75.0 32.2,73.5 34.0,71.3 35.8,69.5 37.6,68.6 39.4,69.1 41.2,70.8 43.0,73.0"/><polyline points="84.0,28.0 82.2,30.1 80.4,31.3 78.6,31.2 76.8,29.8 75.0,27.7 73.2,25.7 71.4,24.7 69.6,25.0 67.8,26.5 66.0,28.7 64.2,30.5 62.4,31.4 60.6,30.9 58.8,29.2 57.0,27.0"/><polyline points="78.0,40.0 76.2,42.0 74.4,41.7 72.6,39.5 70.8,37.9 69.0,38.6 67.2,40.9 65.4,42.2 63.6,41.0 61.8,38.7 60.0,37.8 58.2,39.4 56.4,41.6"/><polyline points="78.0,61.0 76.2,59.0 74.4,59.3 72.6,61.5 70.8,63.1 69.0,62.4 67.2,60.1 65.4,58.8 63.6,60.0 61.8,62.3 60.0,63.2 58.2,61.6 56.4,59.4"/><polyline points="84.0,72.0 82.2,69.9 80.4,68.7 78.6,68.8 76.8,70.2 75.0,72.3 73.2,74.3 71.4,75.3 69.6,75.0 67.8,73.5 66.0,71.3 64.2,69.5 62.4,68.6 60.6,69.1 58.8,70.8 57.0,73.0"/></g></g></svg>
+      <span class="kicker">Trivia de Quisqueya</span>
+    </div>
+    <h1>Cibertodo Quizz</h1>
+    <div class="rule" aria-hidden="true"><span></span><span></span></div>
+    <p class="lead">4 niveles, cada uno más difícil. 10 preguntas por nivel y 20 segundos para cada una. Saca 7 para pasar al siguiente.</p>
+    <div class="modes" id="modes"></div>
+    <p class="best" id="best"></p>
+  </section>
+
+  <section id="s-quiz" hidden>
+    <div class="hud">
+      <span class="count" id="count"></span>
+      <div class="segs" id="segs" aria-hidden="true"></div>
+      <span class="score" id="score"></span>
+    </div>
+    <div class="timer" id="timer" aria-hidden="true"><div id="timerBar"></div></div>
+    <span class="chip" id="chip"></span>
+    <h2 class="q" id="q"></h2>
+    <div class="opts" id="opts"></div>
+    <div id="fbBox"></div>
+  </section>
+
+  <section id="s-end" hidden>
+    <p class="end-rank" id="endRank"></p>
+    <h2 class="end-title" id="endTitle"></h2>
+    <p class="end-msg" id="endMsg"></p>
+    <div class="stats">
+      <div class="stat"><b id="endScore"></b><span>puntos</span></div>
+      <div class="stat"><b id="endOk"></b><span id="endOkLabel">respuestas correctas</span></div>
+    </div>
+    <p class="end-best" id="endBest"></p>
+    <button class="cta" id="nextLvl" type="button" hidden>Jugar el siguiente nivel</button>
+    <button class="cta ghost" id="again" type="button">Repetir nivel</button>
+    <button class="cta share" id="share" type="button">Compartir mi puntaje por WhatsApp</button>
+    <button class="cta ghost" id="menu" type="button">Ver niveles</button>
+    <button class="cta ghost" id="install" type="button" hidden>Instalar en mi celular</button>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var SECONDS = 20;
+  var ROUND = 10;
+  var CAT = { dom: "Dominicanidad", gen: "Cultura general", tec: "Tecnología y seguridad" };
+
+  /* La primera opción de cada pregunta es la correcta; el juego las mezcla al mostrarlas. */
+  var QUESTIONS = [
+    { c: "dom", d: 1, q: "¿Qué día se celebra la Independencia Nacional?",
+      o: ["27 de febrero", "16 de agosto", "24 de septiembre", "12 de octubre"],
+      e: "El 27 de febrero de 1844 se proclamó la independencia frente a Haití. El 16 de agosto es el Día de la Restauración." },
+    { c: "dom", d: 1, q: "¿Quiénes son los Padres de la Patria?",
+      o: ["Duarte, Sánchez y Mella", "Gómez, Luperón y Heureaux", "Trujillo, Balaguer y Bosch", "Colón, Ovando y Las Casas"],
+      e: "Juan Pablo Duarte, Francisco del Rosario Sánchez y Matías Ramón Mella." },
+    { c: "dom", d: 1, q: "¿Cómo se llama la montaña más alta del Caribe, en la Cordillera Central?",
+      o: ["Pico Duarte", "Loma Rucilla", "Pico Diego de Ocampo", "Loma Quita Espuela"],
+      e: "El Pico Duarte pasa de los 3,000 metros de altura." },
+    { c: "dom", d: 2, q: "¿Cuál de estos ritmos dominicanos fue reconocido por la UNESCO en 2019?",
+      o: ["La bachata", "El dembow", "El carabiné", "La mangulina"],
+      e: "La bachata entró en la lista de Patrimonio Cultural Inmaterial en 2019. El merengue lo había logrado en 2016." },
+    { c: "dom", d: 1, q: "¿Qué instrumentos no pueden faltar en un merengue típico?",
+      o: ["Acordeón, tambora y güira", "Guitarra, bongó y maracas", "Saxofón, piano y bajo", "Violín, arpa y flauta"],
+      e: "El acordeón lleva la melodía, la tambora marca el ritmo y la güira le da el raspado." },
+    { c: "dom", d: 1, q: "¿De qué se hace el mangú?",
+      o: ["Plátano verde hervido y majado", "Yuca rallada", "Arroz con coco", "Maíz molido"],
+      e: "Se sirve con cebollitas encurtidas. El famoso \"tres golpes\" lleva además huevo, queso frito y salami." },
+    { c: "dom", d: 1, q: "¿Qué lleva el plato dominicano conocido como \"La Bandera\"?",
+      o: ["Arroz, habichuelas y carne", "Mangú con salami", "Sancocho de siete carnes", "Chivo guisado con yuca"],
+      e: "Es el almuerzo de todos los días y suele acompañarse con ensalada, tostones o maduro." },
+    { c: "dom", d: 1, q: "¿En qué época del año se acostumbra preparar habichuelas con dulce?",
+      o: ["Cuaresma y Semana Santa", "Navidad", "Carnaval", "Día de las Madres"],
+      e: "Se hacen con habichuelas rojas, leche, coco, batata y galletitas de leche." },
+    { c: "dom", d: 2, q: "¿Cuál es el lago más grande del Caribe, ubicado bajo el nivel del mar?",
+      o: ["Lago Enriquillo", "Laguna Oviedo", "Presa de Valdesia", "Laguna de Rincón"],
+      e: "Está a unos 40 metros bajo el nivel del mar y allí viven cocodrilos americanos." },
+    { c: "dom", d: 1, q: "¿Qué piedra azul se encuentra solo en República Dominicana?",
+      o: ["Larimar", "Ámbar", "Turquesa", "Jade"],
+      e: "El larimar se extrae de las montañas de Barahona." },
+    { c: "dom", d: 2, q: "¿Qué tiene de especial el escudo de la bandera dominicana?",
+      o: ["Lleva una Biblia abierta", "Tiene un caballo en el centro", "Incluye tres estrellas", "Lleva un sol amarillo"],
+      e: "Es la única bandera nacional con una Biblia abierta, junto al lema Dios, Patria, Libertad." },
+    { c: "dom", d: 1, q: "¿Cómo se llama la isla que comparten República Dominicana y Haití?",
+      o: ["La Española", "Santa Lucía", "Trinidad", "Margarita"],
+      e: "Colón la llamó La Española. Los taínos la conocían como Quisqueya o Ayití." },
+    { c: "dom", d: 2, q: "¿Cuáles son los códigos de área telefónicos de República Dominicana?",
+      o: ["809, 829 y 849", "809, 787 y 939", "305, 809 y 829", "809, 868 y 876"],
+      e: "El 787 y el 939 son de Puerto Rico. Desconfía de llamadas de números raros que te piden dinero." },
+    { c: "dom", d: 2, q: "¿Qué día se recuerda a las hermanas Mirabal, con el Día Internacional contra la Violencia hacia la Mujer?",
+      o: ["25 de noviembre", "8 de marzo", "14 de febrero", "30 de mayo"],
+      e: "Las Mirabal fueron asesinadas en 1960 durante la dictadura de Trujillo. La ONU escogió esa fecha en su honor." },
+    { c: "dom", d: 2, q: "¿Qué día se celebra la Virgen de la Altagracia?",
+      o: ["21 de enero", "24 de septiembre", "8 de diciembre", "1 de enero"],
+      e: "Es la protectora del pueblo dominicano y su basílica está en Higüey." },
+    { c: "dom", d: 1, q: "¿En qué provincia está Punta Cana?",
+      o: ["La Altagracia", "Samaná", "Puerto Plata", "La Romana"],
+      e: "Punta Cana queda en el este del país, cerca de Higüey, en la provincia La Altagracia." },
+    { c: "dom", d: 2, q: "¿Cuántas provincias tiene República Dominicana?",
+      o: ["31", "27", "32", "25"],
+      e: "Son 31 provincias más el Distrito Nacional." },
+    { c: "dom", d: 1, q: "¿Con qué equipo ganó David Ortiz tres Series Mundiales?",
+      o: ["Boston Red Sox", "New York Yankees", "Chicago Cubs", "Los Angeles Dodgers"],
+      e: "Con Boston ganó en 2004, 2007 y 2013. Big Papi nació en Santo Domingo." },
+    { c: "dom", d: 1, q: "¿Cómo se llama el grupo de Juan Luis Guerra?",
+      o: ["4.40", "Los Hijos del Rey", "Aventura", "Fulanito"],
+      e: "Con 4.40 llegaron éxitos como \"Ojalá que llueva café\" y \"Bachata rosa\"." },
+    { c: "dom", d: 3, q: "¿Cuál es la flor nacional dominicana?",
+      o: ["Rosa de Bayahíbe", "Orquídea", "Hibisco", "Girasol"],
+      e: "La rosa de Bayahíbe pertenece a la familia de los cactus." },
+    { c: "dom", d: 2, q: "¿Qué personaje del carnaval dominicano usa una máscara con cuernos y un traje colorido?",
+      o: ["El Diablo Cojuelo", "Roba la Gallina", "Califé", "Los Indios"],
+      e: "Los diablos cojuelos son los más conocidos del Carnaval de La Vega." },
+    { c: "dom", d: 2, q: "¿Qué es la mamajuana?",
+      o: ["Una bebida de ron, vino tinto y miel con raíces", "Un dulce de leche", "Un refresco de cebada", "Una sopa de res"],
+      e: "Se prepara dejando raíces, hierbas y cortezas en ron, vino tinto y miel." },
+    { c: "dom", d: 2, q: "¿Qué ciudad dominicana tiene la Catedral Primada de América?",
+      o: ["Santo Domingo", "Santiago", "La Vega", "Puerto Plata"],
+      e: "Está en la Zona Colonial de Santo Domingo, Patrimonio de la Humanidad desde 1990." },
+    { c: "dom", d: 1, q: "¿Cuál es la segunda ciudad más grande de República Dominicana?",
+      o: ["Santiago de los Caballeros", "San Pedro de Macorís", "La Romana", "San Francisco de Macorís"],
+      e: "Santiago es la ciudad principal del Cibao." },
+    { c: "dom", d: 1, q: "¿Cómo se llama el plátano verde frito y aplastado?",
+      o: ["Tostones", "Maduros", "Chicharrones", "Yaniqueques"],
+      e: "Los maduros, en cambio, se hacen con plátano maduro frito." },
+    { c: "dom", d: 1, q: "¿Qué es un colmado?",
+      o: ["Una tienda de barrio donde se vende de todo", "Un baile típico", "Un plato de pescado", "Un tipo de casa de campo"],
+      e: "El colmado también es punto de encuentro del barrio, con música y dominó." },
+    { c: "dom", d: 2, q: "¿En qué año llegó Cristóbal Colón a la isla La Española?",
+      o: ["1492", "1498", "1502", "1521"],
+      e: "Llegó en diciembre de 1492. Santo Domingo, la primera ciudad europea permanente de América, se fundó en 1496." },
+
+    { c: "gen", d: 1, q: "¿Cuál es el planeta más grande del sistema solar?",
+      o: ["Júpiter", "Saturno", "Neptuno", "Tierra"],
+      e: "Dentro de Júpiter cabrían más de mil planetas como la Tierra." },
+    { c: "gen", d: 1, q: "¿Cuál es el océano más grande del mundo?",
+      o: ["Pacífico", "Atlántico", "Índico", "Ártico"],
+      e: "El Pacífico cubre cerca de un tercio de la superficie del planeta." },
+    { c: "gen", d: 1, q: "¿Quién pintó la Mona Lisa?",
+      o: ["Leonardo da Vinci", "Miguel Ángel", "Pablo Picasso", "Vincent van Gogh"],
+      e: "Hoy se exhibe en el Museo del Louvre, en París." },
+    { c: "gen", d: 2, q: "¿Cuál es la capital de Australia?",
+      o: ["Canberra", "Sídney", "Melbourne", "Perth"],
+      e: "Sídney y Melbourne son más grandes, pero la capital es Canberra." },
+    { c: "gen", d: 2, q: "¿Cuántos huesos tiene el cuerpo de un adulto?",
+      o: ["206", "150", "300", "412"],
+      e: "Los bebés nacen con más huesos, que se van uniendo mientras crecen." },
+    { c: "gen", d: 1, q: "¿Quién escribió Don Quijote de la Mancha?",
+      o: ["Miguel de Cervantes", "Gabriel García Márquez", "Pablo Neruda", "Lope de Vega"],
+      e: "La primera parte se publicó en 1605." },
+    { c: "gen", d: 1, q: "¿En qué año llegó el ser humano a la Luna?",
+      o: ["1969", "1957", "1975", "1984"],
+      e: "Fue con la misión Apolo 11. Neil Armstrong fue el primero en pisarla." },
+    { c: "gen", d: 2, q: "¿Cuál es el símbolo químico del oro?",
+      o: ["Au", "Ag", "Go", "Or"],
+      e: "Viene del latín aurum. Ag es la plata." },
+    { c: "gen", d: 1, q: "¿Qué selección ganó el Mundial de fútbol de 2022?",
+      o: ["Argentina", "Francia", "Brasil", "Croacia"],
+      e: "Argentina venció a Francia en penales en la final jugada en Catar." },
+    { c: "gen", d: 2, q: "¿Quién escribió Cien años de soledad?",
+      o: ["Gabriel García Márquez", "Mario Vargas Llosa", "Julio Cortázar", "Isabel Allende"],
+      e: "García Márquez, colombiano, ganó el Premio Nobel de Literatura en 1982." },
+    { c: "gen", d: 2, q: "¿Cuál es el país más grande del mundo por superficie?",
+      o: ["Rusia", "Canadá", "China", "Estados Unidos"],
+      e: "Rusia ocupa más de 17 millones de kilómetros cuadrados." },
+    { c: "gen", d: 3, q: "¿Qué continente tiene más países?",
+      o: ["África", "Asia", "Europa", "América"],
+      e: "África tiene 54 países reconocidos por la ONU." },
+
+    { c: "tec", d: 1, q: "¿Qué es el phishing?",
+      o: ["Un engaño con mensajes o páginas falsas para robar tus datos", "Un virus que borra el disco duro", "Una red WiFi pública", "Un tipo de cable de red"],
+      e: "Desconfía de enlaces que llegan por WhatsApp, SMS o correo pidiendo tus claves." },
+    { c: "tec", d: 2, q: "¿Para qué sirve un firewall?",
+      o: ["Para filtrar el tráfico que entra y sale de una red", "Para enfriar la computadora", "Para acelerar el internet", "Para guardar contraseñas"],
+      e: "Funciona como un portero: deja pasar solo lo que cumple las reglas." },
+    { c: "tec", d: 1, q: "¿Cuál es la contraseña más segura?",
+      o: ["Una frase larga y única con letras, números y símbolos", "Tu fecha de nacimiento", "123456", "El nombre de tu mascota"],
+      e: "Mientras más larga y única, mejor. Un gestor de contraseñas te ayuda a no repetirlas." },
+
+    /* ---- Nivel 2: medio (nuevas) ---- */
+    { c: "dom", d: 2, q: "¿En qué bahía dominicana llegan cada año las ballenas jorobadas a reproducirse?",
+      o: ["Bahía de Samaná", "Bahía de Ocoa", "Bahía de Neiba", "Bahía de las Águilas"],
+      e: "Llegan entre enero y marzo y se pueden ver desde Samaná." },
+    { c: "gen", d: 2, q: "¿En qué año cayó el Muro de Berlín?",
+      o: ["1989", "1975", "1991", "1961"],
+      e: "Cayó el 9 de noviembre de 1989. El muro se había levantado en 1961." },
+    { c: "tec", d: 2, q: "¿Qué es la verificación en dos pasos (2FA)?",
+      o: ["Pedir un segundo código además de la contraseña", "Escribir la contraseña dos veces", "Tener dos cuentas distintas", "Cambiar la clave cada dos días"],
+      e: "Aunque alguien te robe la clave, sin el segundo código no puede entrar." },
+
+    /* ---- Nivel 3: difícil ---- */
+    { c: "dom", d: 3, q: "¿Quién fue el primer presidente de la República Dominicana, en 1844?",
+      o: ["Pedro Santana", "Buenaventura Báez", "Ulises Heureaux", "Juan Isidro Jimenes"],
+      e: "Pedro Santana gobernó bajo la primera Constitución, la de San Cristóbal." },
+    { c: "dom", d: 3, q: "¿En qué año terminó la Guerra de la Restauración, cuando España dejó la isla?",
+      o: ["1865", "1844", "1861", "1916"],
+      e: "La guerra empezó el 16 de agosto de 1863 y España se retiró en 1865." },
+    { c: "dom", d: 3, q: "¿Cómo se llamaba la hermana Mirabal que sobrevivió y mantuvo viva la memoria de las demás?",
+      o: ["Dedé", "Minerva", "Patria", "María Teresa"],
+      e: "Dedé Mirabal contó la historia de sus hermanas por el mundo hasta su muerte en 2014." },
+    { c: "dom", d: 3, q: "¿Cuál es el río más largo de República Dominicana?",
+      o: ["Yaque del Norte", "Ozama", "Yuna", "Higuamo"],
+      e: "El Yaque del Norte nace en la Cordillera Central y desemboca en la bahía de Montecristi." },
+    { c: "dom", d: 3, q: "¿Quién escribió la letra del Himno Nacional dominicano?",
+      o: ["Emilio Prud'Homme", "José Reyes", "Juan Antonio Alix", "Pedro Henríquez Ureña"],
+      e: "José Reyes compuso la música." },
+    { c: "dom", d: 3, q: "¿Qué poeta dominicana es considerada la Poetisa Nacional?",
+      o: ["Salomé Ureña", "Julia Álvarez", "Aída Cartagena Portalatín", "Hilma Contreras"],
+      e: "Salomé Ureña también fue educadora y fundó el Instituto de Señoritas en 1881." },
+    { c: "dom", d: 3, q: "¿Cuál es el árbol nacional dominicano?",
+      o: ["La caoba", "El roble", "La palma real", "El pino"],
+      e: "La caoba criolla es el árbol nacional. La palma real es de Cuba." },
+    { c: "dom", d: 3, q: "¿Qué monumento de Santo Domingo, inaugurado en 1992, tiene forma de cruz?",
+      o: ["Faro a Colón", "Altar de la Patria", "Fortaleza Ozama", "Palacio Nacional"],
+      e: "Se construyó para los 500 años de la llegada de Colón a América." },
+    { c: "dom", d: 3, q: "¿Cómo se llama la primera calle de América, en la Zona Colonial de Santo Domingo?",
+      o: ["Calle Las Damas", "Calle El Conde", "Calle Hostos", "Calle Isabel la Católica"],
+      e: "Su nombre viene de las damas de la corte que paseaban por ella." },
+    { c: "dom", d: 3, q: "¿Qué dominicano es el que más jonrones ha conectado en la historia de las Grandes Ligas?",
+      o: ["Albert Pujols", "Sammy Sosa", "David Ortiz", "Manny Ramírez"],
+      e: "Pujols terminó su carrera en 2022 con 703 jonrones." },
+    { c: "dom", d: 3, q: "¿Qué lanzador dominicano ganó tres premios Cy Young y entró al Salón de la Fama en 2015?",
+      o: ["Pedro Martínez", "Juan Marichal", "Johnny Cueto", "Bartolo Colón"],
+      e: "Pedro Martínez ganó el Cy Young en 1997, 1999 y 2000." },
+    { c: "gen", d: 3, q: "¿Cuál es el elemento más abundante en la corteza terrestre?",
+      o: ["Oxígeno", "Silicio", "Hierro", "Aluminio"],
+      e: "El oxígeno representa casi la mitad del peso de la corteza." },
+    { c: "gen", d: 3, q: "¿Qué filósofo griego fue maestro de Alejandro Magno?",
+      o: ["Aristóteles", "Platón", "Sócrates", "Pitágoras"],
+      e: "Aristóteles fue discípulo de Platón, quien a su vez fue discípulo de Sócrates." },
+    { c: "tec", d: 3, q: "¿Qué hace un ataque de ransomware?",
+      o: ["Bloquea tus archivos y pide dinero para devolverlos", "Acelera tu computadora", "Borra solo las fotos viejas", "Cambia el fondo de pantalla"],
+      e: "Por eso importa tener copias de seguridad fuera de tu equipo." },
+
+    /* ---- Nivel 4: experto ---- */
+    { c: "dom", d: 4, q: "¿Quién fundó la ciudad de Santo Domingo en 1496?",
+      o: ["Bartolomé Colón", "Cristóbal Colón", "Nicolás de Ovando", "Diego Colón"],
+      e: "Bartolomé, hermano de Cristóbal, la fundó. Ovando la reconstruyó en la orilla oeste del Ozama en 1502." },
+    { c: "dom", d: 4, q: "¿En qué año fue ajusticiado el dictador Rafael Leónidas Trujillo?",
+      o: ["1961", "1960", "1963", "1965"],
+      e: "Fue el 30 de mayo de 1961, tras más de 30 años en el poder." },
+    { c: "dom", d: 4, q: "¿Qué ocurrió en República Dominicana el 24 de abril de 1965?",
+      o: ["Estalló la Revolución de Abril", "Murió Trujillo", "Se firmó la independencia", "Llegó el huracán David"],
+      e: "Los constitucionalistas pedían el regreso de Juan Bosch, derrocado en 1963." },
+    { c: "dom", d: 4, q: "¿Qué escritor ganó las elecciones de 1962 y fue derrocado siete meses después de asumir?",
+      o: ["Juan Bosch", "Joaquín Balaguer", "Antonio Guzmán", "Salvador Jorge Blanco"],
+      e: "Bosch asumió en febrero de 1963 y fue derrocado en septiembre de ese año." },
+    { c: "dom", d: 4, q: "¿Quién escribió la novela La fiesta del Chivo, sobre el final de Trujillo?",
+      o: ["Mario Vargas Llosa", "Gabriel García Márquez", "Julia Álvarez", "Junot Díaz"],
+      e: "Julia Álvarez escribió En el tiempo de las mariposas, sobre las hermanas Mirabal." },
+    { c: "dom", d: 4, q: "¿Qué escritor dominicano ganó el Pulitzer en 2008 con La maravillosa vida breve de Óscar Wao?",
+      o: ["Junot Díaz", "Pedro Mir", "Juan Bosch", "Marcio Veloz Maggiolo"],
+      e: "Junot Díaz nació en Santo Domingo y se crió en Nueva Jersey." },
+    { c: "dom", d: 4, q: "¿Qué cacique taíno lideró la rebelión en la sierra de Bahoruco a partir de 1519?",
+      o: ["Enriquillo", "Caonabo", "Hatuey", "Guarionex"],
+      e: "La rebelión de Enriquillo terminó con un acuerdo de paz con los españoles en 1533." },
+    { c: "dom", d: 4, q: "¿Cuál es el ave nacional de República Dominicana?",
+      o: ["Cigua palmera", "Cotorra", "Barrancolí", "Ruiseñor"],
+      e: "La cigua palmera hace sus nidos grandes y comunales en las palmas." },
+    { c: "dom", d: 4, q: "¿Quién fue el primer dominicano en jugar en las Grandes Ligas, en 1956?",
+      o: ["Ozzie Virgil", "Felipe Alou", "Juan Marichal", "Sammy Sosa"],
+      e: "Virgil debutó con los Gigantes. Marichal y los hermanos Alou llegaron poco después." },
+    { c: "dom", d: 4, q: "¿Quién ganó el primer oro olímpico de República Dominicana, en Atenas 2004?",
+      o: ["Félix Sánchez", "Luguelín Santos", "Marileidy Paulino", "Pedro Martínez"],
+      e: "Félix Sánchez ganó los 400 metros con vallas." },
+    { c: "gen", d: 4, q: "¿Cuál es la capital de Kazajistán?",
+      o: ["Astaná", "Almatý", "Taskent", "Biskek"],
+      e: "Almatý es la ciudad más grande, pero la capital es Astaná." },
+    { c: "gen", d: 4, q: "¿Cuál es el hueso más pequeño del cuerpo humano?",
+      o: ["El estribo", "El martillo", "La falange", "El hioides"],
+      e: "El estribo está en el oído medio y mide unos 3 milímetros." },
+    { c: "tec", d: 4, q: "¿Qué puerto usa por defecto el tráfico HTTPS?",
+      o: ["443", "80", "22", "21"],
+      e: "El 80 es para HTTP sin cifrar, el 22 para SSH y el 21 para FTP." }
+  ];
+
+  var PASS = 7;
+  var LEVELS = [
+    { n: 1, name: "Recién llegado", desc: "Preguntas fáciles" },
+    { n: 2, name: "Vecino del barrio", desc: "Preguntas medias" },
+    { n: 3, name: "Dominicano de pura cepa", desc: "Preguntas difíciles" },
+    { n: 4, name: "Cibertodo de Quisqueya", desc: "Solo para expertos" }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var S = null;
+  var tick = null;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function show(id) {
+    ["s-start", "s-quiz", "s-end"].forEach(function (x) { $(x).hidden = x !== id; });
+    window.scrollTo(0, 0);
+  }
+  var KEY = "sabelotodo-niveles";
+  function load() {
+    try {
+      var o = JSON.parse(localStorage.getItem(KEY));
+      if (o && o.best && o.passed && o.unlocked) return o;
+    } catch (e) {}
+    return { unlocked: 1, best: {}, passed: {} };
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {}
+  }
+  var P = load();
+  if (!P.seen) P.seen = {};
+
+  /* Cuántas preguntas de cada dificultad entran en cada nivel (suman 10).
+     Así el nivel sigue subiendo, pero siempre se cuela alguna más fácil o más difícil. */
+  var MIX = {
+    1: { 1: 8, 2: 2 },
+    2: { 1: 2, 2: 6, 3: 2 },
+    3: { 2: 2, 3: 6, 4: 2 },
+    4: { 3: 3, 4: 7 }
+  };
+
+  /* Elige primero preguntas que no se han visto. Cuando se acaban las de una dificultad, vuelve a empezar. */
+  function pick(level) {
+    var out = [];
+    Object.keys(MIX[level.n]).forEach(function (dk) {
+      var d = parseInt(dk, 10), want = MIX[level.n][dk];
+      var pool = QUESTIONS.filter(function (q) { return q.d === d; });
+      var take = shuffle(pool.filter(function (q) { return !P.seen[q.q]; })).slice(0, want);
+      if (take.length < want) {
+        pool.forEach(function (q) { delete P.seen[q.q]; });
+        var rest = shuffle(pool.filter(function (q) { return take.indexOf(q) < 0; }));
+        take = take.concat(rest.slice(0, want - take.length));
+      }
+      take.forEach(function (q) { P.seen[q.q] = 1; });
+      out = out.concat(take);
+    });
+    save();
+    return shuffle(out);
+  }
+
+  function buildMenu() {
+    var box = $("modes");
+    box.textContent = "";
+    var done = 0;
+    LEVELS.forEach(function (l) {
+      var locked = l.n > P.unlocked;
+      var passed = !!P.passed[l.n];
+      if (passed) done += 1;
+      var cls = "mode" + (l.n === P.unlocked && !passed ? " main" : "") + (locked ? " locked" : "");
+      var b = el("button", cls);
+      b.type = "button";
+      b.disabled = locked;
+      b.appendChild(el("span", "num", String(l.n)));
+      var mid = el("span", "mid");
+      mid.appendChild(el("span", "t", l.name));
+      mid.appendChild(el("span", "d", locked
+        ? "Saca " + PASS + "/" + ROUND + " en el nivel " + (l.n - 1) + " para abrirlo"
+        : l.desc + " · " + ROUND + " preguntas"));
+      b.appendChild(mid);
+      var best = P.best[l.n] || 0;
+      var st = locked ? "Bloqueado" : passed ? "Superado" : best ? "Mejor " + best.toLocaleString("es-DO") : "\u2192";
+      b.appendChild(el("span", "go", st));
+      if (!locked) b.addEventListener("click", function () { start(l); });
+      box.appendChild(b);
+    });
+    $("best").textContent = done === LEVELS.length
+      ? "Superaste los 4 niveles. ¡Ya eres un Cibertodo!"
+      : done ? "Niveles superados: " + done + " de " + LEVELS.length
+      : "Todavía no has jugado. ¡Ánimo!";
+    show("s-start");
+  }
+
+  function start(level) {
+    var list = pick(level).map(function (q) {
+      return {
+        c: q.c, q: q.q, e: q.e,
+        opts: shuffle(q.o.map(function (t, k) { return { t: t, ok: k === 0 }; }))
+      };
+    });
+    S = { level: level, list: list, i: 0, score: 0, correct: 0, streak: 0, results: [], locked: false, deadline: 0, passed: false };
+    show("s-quiz");
+    renderQuestion();
+  }
+
+  function renderHud() {
+    $("count").textContent = (S.i + 1) + "/" + S.list.length;
+    $("score").textContent = S.score.toLocaleString("es-DO") + " pts";
+    var segs = $("segs");
+    segs.textContent = "";
+    S.list.forEach(function (_, k) {
+      var s = el("span");
+      if (k < S.results.length) s.className = S.results[k] ? "ok" : "no";
+      else if (k === S.i) s.className = "now";
+      segs.appendChild(s);
+    });
+  }
+
+  function renderQuestion() {
+    var q = S.list[S.i];
+    S.locked = false;
+    renderHud();
+    $("chip").textContent = "Nivel " + S.level.n + " · " + CAT[q.c];
+    $("q").textContent = q.q;
+    $("fbBox").textContent = "";
+    var box = $("opts");
+    box.textContent = "";
+    q.opts.forEach(function (o, k) {
+      var b = el("button", "opt");
+      b.type = "button";
+      b.appendChild(el("span", "key", String.fromCharCode(65 + k)));
+      b.appendChild(el("span", "txt", o.t));
+      b.appendChild(el("span", "mark", ""));
+      b.addEventListener("click", function () { answer(k); });
+      box.appendChild(b);
+    });
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(tick);
+    var bar = $("timerBar");
+    $("timer").classList.remove("low");
+    bar.style.transform = "scaleX(1)";
+    S.deadline = performance.now() + SECONDS * 1000;
+    tick = setInterval(function () {
+      var left = Math.max(0, (S.deadline - performance.now()) / 1000);
+      bar.style.transform = "scaleX(" + (left / SECONDS) + ")";
+      if (left <= 5) $("timer").classList.add("low");
+      if (left <= 0) answer(-1);
+    }, 100);
+  }
+
+  function answer(idx) {
+    if (S.locked) return;
+    S.locked = true;
+    clearInterval(tick);
+    var left = Math.max(0, (S.deadline - performance.now()) / 1000);
+    var q = S.list[S.i];
+    var ok = idx >= 0 && q.opts[idx].ok;
+    var pts = 0;
+    if (ok) {
+      pts = Math.max(10, Math.round((left / SECONDS) * 200)) * S.level.n;
+      S.score += pts;
+      S.correct += 1;
+      S.streak += 1;
+    } else {
+      S.streak = 0;
+    }
+    S.results.push(ok);
+
+    var buttons = $("opts").children;
+    for (var k = 0; k < buttons.length; k++) {
+      var b = buttons[k];
+      b.disabled = true;
+      var mark = b.querySelector(".mark");
+      if (q.opts[k].ok) { b.classList.add("correct"); mark.textContent = "✓"; }
+      else if (k === idx) { b.classList.add("wrong"); mark.textContent = "✗"; }
+      else b.classList.add("dim");
+    }
+    renderHud();
+
+    var fb = el("div", "fb");
+    fb.setAttribute("role", "status");
+    var head = idx < 0 ? "Se acabó el tiempo" : ok ? "¡Correcto! +" + pts : "Incorrecto";
+    fb.appendChild(el("h3", ok ? "ok" : "no", head));
+    fb.appendChild(el("p", "", q.e));
+    if (S.streak >= 2) fb.appendChild(el("div", "streak", "Racha de " + S.streak + " seguidas"));
+    var last = S.i === S.list.length - 1;
+    var next = el("button", "cta", last ? "Ver resultado" : "Siguiente");
+    next.type = "button";
+    next.addEventListener("click", function () {
+      if (last) finish(); else { S.i += 1; renderQuestion(); }
+    });
+    $("fbBox").textContent = "";
+    $("fbBox").appendChild(fb);
+    $("fbBox").appendChild(next);
+    next.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  function finish() {
+    var L = S.level;
+    var passed = S.correct >= PASS;
+    var last = L.n === LEVELS.length;
+    S.passed = passed;
+    var prev = P.best[L.n] || 0;
+    var record = S.score > prev;
+    if (record) P.best[L.n] = S.score;
+    if (passed) {
+      P.passed[L.n] = true;
+      if (!last && P.unlocked < L.n + 1) P.unlocked = L.n + 1;
+    }
+    save();
+
+    $("endRank").textContent = "Nivel " + L.n + " · " + L.name;
+    $("endTitle").textContent = passed
+      ? (last ? "¡Eres un Cibertodo de Quisqueya!" : "¡Pasaste al nivel " + (L.n + 1) + "!")
+      : "Casi lo logras";
+    $("endMsg").textContent = passed
+      ? (last ? "Completaste los 4 niveles. Reta a tus panas a superarte."
+              : "Ya puedes jugar el nivel " + (L.n + 1) + ": " + LEVELS[L.n].name + ".")
+      : "Necesitas " + PASS + " de " + S.list.length + " para pasar. Tú sacaste " + S.correct + ".";
+    $("endScore").textContent = S.score.toLocaleString("es-DO");
+    $("endOk").textContent = S.correct + "/" + S.list.length;
+    $("endBest").textContent = "";
+    if (record && S.score > 0) {
+      $("endBest").appendChild(el("strong", "", "¡Nuevo récord en este nivel!"));
+      if (prev) $("endBest").appendChild(document.createTextNode(" Antes tu mejor era " + prev.toLocaleString("es-DO") + "."));
+    } else {
+      $("endBest").appendChild(document.createTextNode("Tu mejor en este nivel: "));
+      $("endBest").appendChild(el("strong", "", Math.max(prev, S.score).toLocaleString("es-DO")));
+    }
+    $("nextLvl").hidden = !(passed && !last);
+    $("again").classList.toggle("ghost", passed);
+    show("s-end");
+  }
+
+  $("nextLvl").addEventListener("click", function () { start(LEVELS[S.level.n]); });
+  $("again").addEventListener("click", function () { start(S.level); });
+  $("menu").addEventListener("click", buildMenu);
+
+  $("share").addEventListener("click", function () {
+    var url = location.href.split("#")[0];
+    var L = S.level;
+    var txt = (S.passed ? "Pasé el nivel " + L.n + " (" + L.name + ")" : "Saqué " + S.correct + "/" + S.list.length + " en el nivel " + L.n + " (" + L.name + ")") +
+      " de Cibertodo Quizz con " + S.score.toLocaleString("es-DO") + " puntos. ¿Me ganas? " + url;
+    if (navigator.share) {
+      navigator.share({ title: "Cibertodo Quizz", text: txt }).catch(function () {});
+    } else {
+      window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+    }
+  });
+
+  var deferred = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferred = e;
+    $("install").hidden = false;
+  });
+  $("install").addEventListener("click", function () {
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.then(function () { deferred = null; $("install").hidden = true; });
+  });
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+
+  buildMenu();
+})();
+</script>
+
+</body></html>
